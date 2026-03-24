@@ -33,3 +33,15 @@ UserParameter=mtproto.discovery,curl -s [http://127.0.0.1:9091/v1/users](http://
 UserParameter=mtproto.total.connections,curl -s [http://127.0.0.1:9091/v1/users](http://127.0.0.1:9091/v1/users) | jq '[.data[].current_connections] | add'
 UserParameter=mtproto.total.ips,curl -s [http://127.0.0.1:9091/v1/users](http://127.0.0.1:9091/v1/users) | jq '[.data[].active_unique_ips] | add'
 UserParameter=mtproto.summary,curl -s [http://127.0.0.1:9091/v1/stats/summary](http://127.0.0.1:9091/v1/stats/summary) | jq '.data'
+```
+
+### 2. Импорт шаблона
+Скачайте файл Telemt MTProxy by Zabbix agent 2 active.yaml.
+
+В веб-интерфейсе Zabbix перейдите в Data collection → Templates.
+
+Нажмите Import и выберите файл шаблона.
+
+Привяжите шаблон к нужному хосту. 
+
+***Убедитесь, что тип интерфейса хоста соответствует настройкам активного агента.***
