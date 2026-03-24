@@ -1,0 +1,441 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 501d97e836d84adaa46dfeca7bc15561
+      name: Templates/Custom
+  templates:
+    - uuid: b442eef4f6b54ed88591f076ffede425
+      template: '_Telemt MTProxy by Zabbix agent 2 active'
+      name: '_Telemt MTProxy by Zabbix agent 2 active'
+      groups:
+        - name: Templates/Custom
+      items:
+        - uuid: aca71f66eef0435f8fd92e40d5df3658
+          name: 'Configured users'
+          type: DEPENDENT
+          key: mtproto.configured_users
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.configured_users
+          master_item:
+            key: mtproto.summary
+        - uuid: 6755ee244a724ba48286419728eadb9d
+          name: 'Error per second'
+          type: DEPENDENT
+          key: mtproto.connections_bad_total
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.connections_bad_total
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: mtproto.summary
+        - uuid: 383a2763246a44a7915b29a833f3be89
+          name: 'Connection per second'
+          type: DEPENDENT
+          key: mtproto.connections_total
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.connections_total
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: mtproto.summary
+        - uuid: f30b22c21f0d4f4395ced82ddfdecc99
+          name: 'Error percent (rate)'
+          type: CALCULATED
+          key: mtproto.error_percent_rate
+          value_type: FLOAT
+          units: '%'
+          params: |
+            last(//mtproto.connections_bad_total) /
+            max(last(//mtproto.connections_total),1) * 100
+          triggers:
+            - uuid: 8b36f1f7e3704add9ce1b657b855a5b8
+              expression: 'last(/_Telemt MTProxy by Zabbix agent 2 active/mtproto.error_percent_rate)>20'
+              name: 'Telemt: Error rate connects'
+              priority: HIGH
+        - uuid: e729c3e87e72426a98270f14069e39e3
+          name: 'Timeout per second'
+          type: DEPENDENT
+          key: mtproto.handshake_timeouts_total
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.handshake_timeouts_total
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: mtproto.summary
+        - uuid: 397111aff6cf4a249d10cffd9bdceb50
+          name: Stats
+          type: ZABBIX_ACTIVE
+          key: mtproto.stats
+          value_type: TEXT
+          trends: '0'
+        - uuid: 17980bf9aa464ef18e8820a5e17384a0
+          name: Summary
+          type: ZABBIX_ACTIVE
+          key: mtproto.summary
+          value_type: TEXT
+          trends: '0'
+        - uuid: 40830f2d34d648fdb926cdc2787ec11b
+          name: 'Total realtime connections TCP'
+          type: ZABBIX_ACTIVE
+          key: mtproto.total.connections
+        - uuid: d946943a6ba548e4b9bfbf16b72a27fc
+          name: 'Total realtime active IP'
+          type: ZABBIX_ACTIVE
+          key: mtproto.total.ips
+        - uuid: 1ca8328d19674d10856a5e28a5e7a8b1
+          name: Uptime
+          type: DEPENDENT
+          key: mtproto.uptime_seconds
+          delay: '0'
+          units: uptime
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.uptime_seconds
+          master_item:
+            key: mtproto.summary
+          triggers:
+            - uuid: 7f5b0680887f4cec99908b385548386b
+              expression: 'change(/_Telemt MTProxy by Zabbix agent 2 active/mtproto.uptime_seconds)<0'
+              name: 'Telemt: Restarted'
+              priority: INFO
+      discovery_rules:
+        - uuid: de1d06649fe049e2b0a9549100a0e9c2
+          name: 'MTProto users discovery'
+          type: ZABBIX_ACTIVE
+          key: mtproto.discovery
+          delay: 1h
+          item_prototypes:
+            - uuid: 2ec9f7b69adc4080b3f754b829455608
+              name: 'Active IP [{#USERNAME}]'
+              type: DEPENDENT
+              key: 'mtproto.active_unique_ips[{#USERNAME}]'
+              delay: '0'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.username=="{#USERNAME}")].active_unique_ips.first()'
+              master_item:
+                key: mtproto.stats
+            - uuid: 5e1dcf29ed73405398c59aececefadcb
+              name: 'Connections TCP [{#USERNAME}]'
+              type: DEPENDENT
+              key: 'mtproto.current_connections[{#USERNAME}]'
+              delay: '0'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.username=="{#USERNAME}")].current_connections.first()'
+              master_item:
+                key: mtproto.stats
+            - uuid: 356555d42f7a466f8922deebcbf5fcc7
+              name: 'Max TCP connects [{#USERNAME}]'
+              type: DEPENDENT
+              key: 'mtproto.max_tcp_conns[{#USERNAME}]'
+              delay: '0'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.username=="{#USERNAME}")].max_tcp_conns.first()'
+              master_item:
+                key: mtproto.stats
+            - uuid: 8ea42ba1a29b416db3a3c457cb1f6cf1
+              name: 'Max IP connects [{#USERNAME}]'
+              type: DEPENDENT
+              key: 'mtproto.max_unique_ips[{#USERNAME}]'
+              delay: '0'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.username=="{#USERNAME}")].max_unique_ips.first()'
+              master_item:
+                key: mtproto.stats
+            - uuid: d847bfd12085467591653cc453080017
+              name: 'Connections TCP % [{#USERNAME}]'
+              type: DEPENDENT
+              key: 'mtproto.usage_connections_percent[{#USERNAME}]'
+              delay: '0'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.username=="{#USERNAME}")].usage_connections_percent.first()'
+              master_item:
+                key: mtproto.stats
+              trigger_prototypes:
+                - uuid: 6f48eb5104c1408d9217d7fe70c3384e
+                  expression: 'last(/_Telemt MTProxy by Zabbix agent 2 active/mtproto.usage_connections_percent[{#USERNAME}])>80'
+                  name: 'Telemt: High TCP connections [{#USERNAME}]'
+                  priority: HIGH
+            - uuid: de699fe8dd9c42af8ee9e26a22ea92b6
+              name: 'Active IP % [{#USERNAME}]'
+              type: DEPENDENT
+              key: 'mtproto.usage_ips_percent[{#USERNAME}]'
+              delay: '0'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$[?(@.username=="{#USERNAME}")].usage_ips_percent.first()'
+              master_item:
+                key: mtproto.stats
+              trigger_prototypes:
+                - uuid: 761f9b7b923c4b74940c510e438e0fc0
+                  expression: 'last(/_Telemt MTProxy by Zabbix agent 2 active/mtproto.usage_ips_percent[{#USERNAME}])>90'
+                  name: 'Telemt: High number IP connections [{#USERNAME}]'
+                  priority: HIGH
+          graph_prototypes:
+            - uuid: cdba8ce3ae054dc9b9c837cd42f668cd
+              name: 'Telemt: Active IP % [{#USERNAME}]'
+              graph_items:
+                - drawtype: GRADIENT_LINE
+                  color: 199C0D
+                  calc_fnc: ALL
+                  item:
+                    host: '_Telemt MTProxy by Zabbix agent 2 active'
+                    key: 'mtproto.usage_ips_percent[{#USERNAME}]'
+            - uuid: ac6cb51ad55c4230900c9617a1a1f4c7
+              name: 'Telemt: Active IP [{#USERNAME}]'
+              graph_items:
+                - color: 199C0D
+                  calc_fnc: ALL
+                  item:
+                    host: '_Telemt MTProxy by Zabbix agent 2 active'
+                    key: 'mtproto.active_unique_ips[{#USERNAME}]'
+                - sortorder: '1'
+                  color: F63100
+                  calc_fnc: ALL
+                  item:
+                    host: '_Telemt MTProxy by Zabbix agent 2 active'
+                    key: 'mtproto.max_unique_ips[{#USERNAME}]'
+            - uuid: 00765bfa719c4cf08369af071ee8b98e
+              name: 'Telemt: Connections TCP % [{#USERNAME}]'
+              graph_items:
+                - drawtype: GRADIENT_LINE
+                  color: 199C0D
+                  calc_fnc: ALL
+                  item:
+                    host: '_Telemt MTProxy by Zabbix agent 2 active'
+                    key: 'mtproto.usage_connections_percent[{#USERNAME}]'
+            - uuid: c74994137e604f389111aea965086428
+              name: 'Telemt: Connections TCP [{#USERNAME}]'
+              graph_items:
+                - color: 199C0D
+                  calc_fnc: ALL
+                  item:
+                    host: '_Telemt MTProxy by Zabbix agent 2 active'
+                    key: 'mtproto.current_connections[{#USERNAME}]'
+                - sortorder: '1'
+                  color: F63100
+                  calc_fnc: ALL
+                  item:
+                    host: '_Telemt MTProxy by Zabbix agent 2 active'
+                    key: 'mtproto.max_tcp_conns[{#USERNAME}]'
+            - uuid: ef5f7c2d56f5421eaf03a93894b72087
+              name: 'Telemt: Usage % [{#USERNAME}]'
+              graph_items:
+                - color: 199C0D
+                  calc_fnc: ALL
+                  item:
+                    host: '_Telemt MTProxy by Zabbix agent 2 active'
+                    key: 'mtproto.usage_ips_percent[{#USERNAME}]'
+                - sortorder: '1'
+                  color: 0080FF
+                  calc_fnc: ALL
+                  item:
+                    host: '_Telemt MTProxy by Zabbix agent 2 active'
+                    key: 'mtproto.usage_connections_percent[{#USERNAME}]'
+      dashboards:
+        - uuid: 6d8b32a4671e46d6a8c642e8b5edcf05
+          name: Telemt
+          display_period: '60'
+          pages:
+            - widgets:
+                - type: svggraph
+                  name: 'Telemt: Total realtime connects'
+                  width: '36'
+                  height: '5'
+                  fields:
+                    - type: STRING
+                      name: ds.0.color.0
+                      value: 33691E
+                    - type: STRING
+                      name: ds.0.color.1
+                      value: 0277BD
+                    - type: INTEGER
+                      name: ds.0.dataset_type
+                      value: '0'
+                    - type: ITEM
+                      name: ds.0.itemids.0
+                      value:
+                        host: '_Telemt MTProxy by Zabbix agent 2 active'
+                        key: mtproto.total.connections
+                    - type: ITEM
+                      name: ds.0.itemids.1
+                      value:
+                        host: '_Telemt MTProxy by Zabbix agent 2 active'
+                        key: mtproto.total.ips
+                    - type: INTEGER
+                      name: legend_lines
+                      value: '10'
+                    - type: INTEGER
+                      name: legend_lines_mode
+                      value: '1'
+                    - type: INTEGER
+                      name: legend_statistic
+                      value: '1'
+                    - type: STRING
+                      name: reference
+                      value: HRBMN
+                    - type: INTEGER
+                      name: righty
+                      value: '0'
+                    - type: INTEGER
+                      name: show_problems
+                      value: '1'
+                - type: svggraph
+                  name: 'Telemt: Error rate connects percent'
+                  'y': '5'
+                  width: '36'
+                  height: '5'
+                  fields:
+                    - type: STRING
+                      name: ds.0.color
+                      value: FF465C
+                    - type: STRING
+                      name: ds.0.items.0
+                      value: 'Error percent (rate)'
+                    - type: INTEGER
+                      name: legend_lines
+                      value: '10'
+                    - type: INTEGER
+                      name: legend_lines_mode
+                      value: '1'
+                    - type: INTEGER
+                      name: legend_statistic
+                      value: '1'
+                    - type: STRING
+                      name: reference
+                      value: CSOPL
+                    - type: INTEGER
+                      name: righty
+                      value: '0'
+                    - type: INTEGER
+                      name: show_problems
+                      value: '1'
+                - type: svggraph
+                  name: 'Telemt: Traffic per second'
+                  x: '36'
+                  width: '36'
+                  height: '5'
+                  fields:
+                    - type: STRING
+                      name: ds.0.color.0
+                      value: 388E3C
+                    - type: STRING
+                      name: ds.0.color.1
+                      value: FFD54F
+                    - type: STRING
+                      name: ds.0.color.2
+                      value: D32F2F
+                    - type: INTEGER
+                      name: ds.0.dataset_type
+                      value: '0'
+                    - type: ITEM
+                      name: ds.0.itemids.0
+                      value:
+                        host: '_Telemt MTProxy by Zabbix agent 2 active'
+                        key: mtproto.connections_total
+                    - type: ITEM
+                      name: ds.0.itemids.1
+                      value:
+                        host: '_Telemt MTProxy by Zabbix agent 2 active'
+                        key: mtproto.handshake_timeouts_total
+                    - type: ITEM
+                      name: ds.0.itemids.2
+                      value:
+                        host: '_Telemt MTProxy by Zabbix agent 2 active'
+                        key: mtproto.connections_bad_total
+                    - type: INTEGER
+                      name: legend_lines
+                      value: '10'
+                    - type: INTEGER
+                      name: legend_lines_mode
+                      value: '1'
+                    - type: INTEGER
+                      name: legend_statistic
+                      value: '1'
+                    - type: STRING
+                      name: reference
+                      value: ZGHRP
+                    - type: INTEGER
+                      name: righty
+                      value: '0'
+                    - type: INTEGER
+                      name: show_problems
+                      value: '1'
+  graphs:
+    - uuid: 334182ce477f4eca88c68339396f1ec6
+      name: 'Telemt: Error rate connects'
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: FF0000
+          calc_fnc: ALL
+          item:
+            host: '_Telemt MTProxy by Zabbix agent 2 active'
+            key: mtproto.error_percent_rate
+    - uuid: 5e6a86d854684bf59df038af98b5a834
+      name: 'Telemt: Total realtime connects'
+      graph_items:
+        - color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: '_Telemt MTProxy by Zabbix agent 2 active'
+            key: mtproto.total.connections
+        - sortorder: '1'
+          color: 0080FF
+          calc_fnc: ALL
+          item:
+            host: '_Telemt MTProxy by Zabbix agent 2 active'
+            key: mtproto.total.ips
+    - uuid: f1310edb4cc04d8186bbc82d3b62cf78
+      name: 'Telemt: Traffic per second'
+      graph_items:
+        - color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: '_Telemt MTProxy by Zabbix agent 2 active'
+            key: mtproto.connections_total
+        - sortorder: '1'
+          color: F63100
+          calc_fnc: ALL
+          item:
+            host: '_Telemt MTProxy by Zabbix agent 2 active'
+            key: mtproto.connections_bad_total
+        - sortorder: '2'
+          color: FFBF00
+          calc_fnc: ALL
+          item:
+            host: '_Telemt MTProxy by Zabbix agent 2 active'
+            key: mtproto.handshake_timeouts_total
+    - uuid: 7a22ed6460d6416aaa586de2ff5c7d33
+      name: 'Telemt: Uptime'
+      graph_items:
+        - color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: '_Telemt MTProxy by Zabbix agent 2 active'
+            key: mtproto.uptime_seconds
