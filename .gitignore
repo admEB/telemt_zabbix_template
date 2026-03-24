@@ -1,0 +1,28 @@
+# Системные файлы
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Папки редактора VS Code
+.vscode/
+*.code-workspace
+
+# Временные файлы и логи
+*.log
+tmp/
+temp/
+
+# Секретные данные (пароли, ключи API)
+.env
+*.pem
+*.key
+
+# Для Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Для Node.js
+node_modules/
+dist/
