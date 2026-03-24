@@ -25,7 +25,7 @@
 ## Установка
 
 ### 1. Настройка Zabbix Agent 2
-Добавьте следующие параметры в конфигурационный файл агента (например, в `/etc/zabbix/zabbix_agent2.d/telemt.conf`):
+Добавьте следующие параметры в конфигурационный файл агента (например, в `/etc/zabbix/zabbix_agent2.d/telemt.conf`) и после перзагрузите агента:
 
 ```bash
 UserParameter=mtproto.stats,curl -s [http://127.0.0.1:9091/v1/users](http://127.0.0.1:9091/v1/users) | jq '[.data[] | {username, max_unique_ips: (.max_unique_ips // 0), max_tcp_conns: (.max_tcp_conns // 0), active_unique_ips, current_connections, usage_connections_percent: (if (.max_tcp_conns // 0) > 0 then (.current_connections * 100 / .max_tcp_conns) else 0 end), usage_ips_percent: (if (.max_unique_ips // 0) > 0 then (.active_unique_ips * 100 / .max_unique_ips) else 0 end)}]'
