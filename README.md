@@ -27,12 +27,15 @@
 ### 1. Настройка Zabbix Agent 2
 Добавьте следующие параметры в конфигурационный файл агента (например, в `/etc/zabbix/zabbix_agent2.d/telemt.conf`) и после перезагрузите агента:
 
-```bash
+```
 UserParameter=mtproto.stats,curl -s [http://127.0.0.1:9091/v1/users](http://127.0.0.1:9091/v1/users) | jq '[.data[] | {username, max_unique_ips: (.max_unique_ips // 0), max_tcp_conns: (.max_tcp_conns // 0), active_unique_ips, current_connections, usage_connections_percent: (if (.max_tcp_conns // 0) > 0 then (.current_connections * 100 / .max_tcp_conns) else 0 end), usage_ips_percent: (if (.max_unique_ips // 0) > 0 then (.active_unique_ips * 100 / .max_unique_ips) else 0 end)}]'
 UserParameter=mtproto.discovery,curl -s [http://127.0.0.1:9091/v1/users](http://127.0.0.1:9091/v1/users) | jq '{data: [.data[] | {"{#USERNAME}": .username}]}'
 UserParameter=mtproto.total.connections,curl -s [http://127.0.0.1:9091/v1/users](http://127.0.0.1:9091/v1/users) | jq '[.data[].current_connections] | add'
 UserParameter=mtproto.total.ips,curl -s [http://127.0.0.1:9091/v1/users](http://127.0.0.1:9091/v1/users) | jq '[.data[].active_unique_ips] | add'
 UserParameter=mtproto.summary,curl -s [http://127.0.0.1:9091/v1/stats/summary](http://127.0.0.1:9091/v1/stats/summary) | jq '.data'
+```
+```
+systemctl restart zabbix-agent2
 ```
 
 ### 2. Импорт шаблона
